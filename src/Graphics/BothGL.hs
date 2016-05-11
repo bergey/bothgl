@@ -20,23 +20,24 @@ import qualified GHCJS.DOM.WebGLRenderingContextBase as W
 #endif
 
 -- Both
-class GL gl where
+class MonadIO => GL gl where
   createShader :: ShaderType -> gl (Maybe Shader)
   -- getShaderSource :: Shader -> gl
   shaderSource :: Shader -> Lazy.ByteString -> gl ()
   compileShader :: Shader -> gl ()
+  createProgram :: gl Program
   attachShader :: Program -> Shader -> gl ()
   linkProgram :: Program -> gl ()
   useProgram :: Program -> gl ()
-  attributeLocation :: Program -> String -> gl (Maybe AttributeLocation)
-  enableVertexAttribArray :: GLuint -> gl ()
+  getAttribLocation :: Program -> String -> gl (Maybe AttributeLocation)
+  enableVertexAttribArray :: AttributeLocation -> gl ()
   vertexAttribPointer :: GLuint ->
     GLint -> GLenum -> GLboolean -> GLsizei -> OffsetPtr -> gl ()
   drawArrays :: GLenum -> GLint -> GLsizei -> gl ()
   clear :: GLbitfield -> gl ()
   createBuffer :: gl (Maybe Buffer)
   bindBuffer :: GLenum -> Maybe Buffer -> gl ()
-  bufferData ::
+  bufferData :: BufferData d => GLenum -> d -> gl ()
 
 -- TODO Instances
 -- 1. GHC & OpenGL package
@@ -54,14 +55,18 @@ instance (MonadIO gl, MonadReader WebGL2RenderingContext gl) => GL gl where
   createShader = ask1 W.createShader
   shaderSource (Shader s) = ask2 W.shaderSource s
   compileShader (Shader s) = ask1 W.compileShader s
+  createProgram = Program <$> ask1 W.createProgram
   attachShader (Program p) (Shader s) = ask1 W.attachShader p s
   linkProgram (Program p) = ask1 W.linkProgram (Just p)
   useProgram (Program p) = ask1 W.useProgram (Just p)
-  getAttribLocation :: (Program p) = ask1 (Just p)
-  enableVertexAttribArry = ask1 W.enableVertexAttribArray
+  getAttribLocation (Program p) = ask1 (Just p)
+  enableVertexAttribArray (AttributeLocation loc) =
+    ask1 W.enableVertexAttribArray (fromIntegral loc)
   vertexAttribPointer = ask6 W.vertexAttribPointer
   drawArrays = ask3 W.drawArrays
   clear = ask1 W.clear
   createBuffer = ask >>= W.createBuffer
   bindBuffer t b = ask2 W.bindBuffer t (unBuffer <$> b)
+#else
+import Graphics.BothGL.Instances.GHC
 #endif

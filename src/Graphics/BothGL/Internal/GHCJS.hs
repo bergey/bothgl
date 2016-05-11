@@ -20,3 +20,9 @@ newtype Buffer a = Buffer WebGLBuffer
 
 unBuffer :: Buffer a -> WebGLBuffer
 unBuffer (Buffer b) = b
+
+instance TypedArray a => BufferData a where
+  withRawData v m = _someFFI
+
+instance BufferData (V.Vector a) where
+  withRawData v m = _unsafeVectorStuffb
