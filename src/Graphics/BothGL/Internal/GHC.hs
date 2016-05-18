@@ -4,7 +4,7 @@ module Graphics.BothGL.Internal.GHC where
 
 import Graphics.BothGL.Class
 
-import Graphics.Rendering.OpenGL
+import Graphics.GL
 
 import GHC.Generics
 import Data.Data
@@ -20,6 +20,9 @@ newtype Program = Program GLuint
 newtype AttributeLocation = AttributeLocation GLuint
 
 newtype OffsetPtr  = OffsetPtr (Ptr ())
+
+newtype BufferUsage = BufferUsage GLenum
+  deriving (Eq,Num,Show,Typeable,Data,Generic)
 
 -- | A 'Buffer' is the generic OpenGL storage object for multiple possible kind of data
 --

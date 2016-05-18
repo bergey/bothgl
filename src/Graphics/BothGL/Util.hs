@@ -4,9 +4,14 @@ module Graphics.BothGL.Util where
 
 import Control.Monad.Reader.Class
 
-zeroNothing :: (Num i, Eq i) => i -> Maybe i
-zeroNothing 0 = Nothing
-zeroNothing i = Just i
+zeroToNothing :: (Num i, Eq i) => i -> Maybe i
+zeroToNothing 0 = Nothing
+zeroToNothing i = Just i
+
+nothingToZero :: (Num i, Eq i) => Maybe i -> i
+nothingToZero Nothing = 0
+nothingToZero (Just 0) = error "0 is not a valid buffer ID"
+nothingToZero (Just i) = i
 
 ask1 :: MonadReader r m => (r -> a -> m b) -> a -> m b
 ask1 f  a = ask >>= \r -> f r a

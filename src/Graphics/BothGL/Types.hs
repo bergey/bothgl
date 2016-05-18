@@ -6,10 +6,12 @@ module Graphics.BothGL.Types (
   ShaderType
   , Shader
   , Program
+  , AttributeLocation
+  , OffsetPtr
+  , BufferUsage
+  , Buffer
+  , RawData
+  , BufferData(..)
   ) where
 
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
- import Graphics.BothGL.Internal.GHCJS
-#else
-  import Graphics.BothGL.Internal.GHC
-#endif
+import Graphics.BothGL.Internal
