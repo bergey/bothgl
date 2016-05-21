@@ -10,7 +10,7 @@ import Control.Monad.IO.Class
 import qualified Data.ByteString.Lazy as Lazy
 import Data.Maybe
 
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 import Control.Monad.Reader.Class
 import qualified GHCJS.DOM.WebGLRenderingContextBase as W
 #else
@@ -28,21 +28,21 @@ import Foreign.Ptr
 import Foreign.Storable
 #endif
 
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 type GL m = (MonadIO m, MonadReader WebGL2RenderingContext m)
 #else
 type GL m = MonadIO m
 #endif
 
 createShader :: GL gl => ShaderType -> gl (Maybe Shader)
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 createShader = ask1 W.createShader
 #else
 createShader = fmap (fmap Shader . zeroToNothing) . glCreateShader
 #endif
 
 shaderSource :: GL gl => Shader -> Lazy.ByteString -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 shaderSource (Shader s) = ask2 W.shaderSource s
 #else
 shaderSource (Shader s) bs = liftIO $
@@ -62,42 +62,42 @@ shaderSource (Shader s) bs = liftIO $
 #endif
 
 compileShader :: GL gl => Shader -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 compileShader (Shader s) = ask1 W.compileShader s
 #else
 compileShader (Shader s) = glCompileShader s
 #endif
 
 createProgram :: GL gl => gl Program
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 createProgram = Program <$> ask1 W.createProgram
 #else
 createProgram = Program <$> glCreateProgram
 #endif
 
 attachShader :: GL gl => Program -> Shader -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 attachShader (Program p) (Shader s) = ask1 W.attachShader p s
 #else
 attachShader (Program p) (Shader s) = glAttachShader p s
 #endif
 
 linkProgram :: GL gl => Program -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 linkProgram (Program p) = ask1 W.linkProgram (Just p)
 #else
 linkProgram (Program p) = glLinkProgram p
 #endif
 
 useProgram :: GL gl => Program -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 useProgram (Program p) = ask1 W.useProgram (Just p)
 #else
 useProgram (Program p) = glUseProgram p
 #endif
 
 getAttribLocation :: GL gl => Program -> String -> gl (Maybe AttributeLocation)
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 getAttribLocation (Program p) s = (fmap . fmap) AttributeLocation $
   ask1 getAttribLocation (Just p) s
 #else
@@ -106,7 +106,7 @@ getAttribLocation (Program p) s =
 #endif
 
 enableVertexAttribArray :: GL gl => AttributeLocation -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 enableVertexAttribArray (AttributeLocation loc) =
   ask1 W.enableVertexAttribArray (fromIntegral loc)
 #else
@@ -115,7 +115,7 @@ enableVertexAttribArray (AttributeLocation loc) = glEnableVertexAttribArray loc
 
 vertexAttribPointer :: GL gl => GLuint ->
   GLint -> GLenum -> Bool -> GLsizei -> OffsetPtr -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 vertexAttribPointer = ask6 W.vertexAttribPointer
 #else
 vertexAttribPointer loc  comp ty toNorm stride (OffsetPtr offPtr) =
@@ -123,21 +123,21 @@ vertexAttribPointer loc  comp ty toNorm stride (OffsetPtr offPtr) =
 #endif
 
 drawArrays :: GL gl => GLenum -> GLint -> GLsizei -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 drawArrays = ask3 W.drawArrays
 #else
 drawArrays mode p size = liftIO $ glDrawArrays mode p size
 #endif
 
 clear :: GL gl => GLbitfield -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 clear = ask1 W.clear
 #else
 clear = glClear
 #endif
 
 createBuffer :: GL gl => gl (Maybe (Buffer a))
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 createBuffer = ask >>= W.createBuffer
 #else
 createBuffer = liftIO $ allocaArray 1 $ \p -> do
@@ -146,14 +146,14 @@ createBuffer = liftIO $ allocaArray 1 $ \p -> do
 #endif
 
 bindBuffer :: GL gl => GLenum -> Maybe (Buffer a) -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 bindBuffer t b = ask2 W.bindBuffer t (unBuffer <$> b)
 #else
 bindBuffer target buf = glBindBuffer target (maybe 0 (\(Buffer b) -> b) buf)
 #endif
 
 bufferData :: GL gl => BufferData d => GLenum -> d -> BufferUsage -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 bufferData t v u = withRawData v $ \arr -> ask3 W.bufferData t arr u
 #else
 bufferData t v u = withRawData v $ \(RawData ptr) ->
@@ -161,7 +161,7 @@ bufferData t v u = withRawData v $ \(RawData ptr) ->
 #endif
 
 clearColor :: GL gl => GLclampf -> GLclampf -> GLclampf -> GLclampf -> gl ()
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 clearColor = ask4 W.clearColor
 #else
 clearColor = glClearColor

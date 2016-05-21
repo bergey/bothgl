@@ -18,7 +18,7 @@
 
 module Graphics.BothGL.Internal where
 
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 import           GHCJS.DOM.WebGLRenderingContextBase
 #else
 import Data.Coerce
@@ -43,7 +43,7 @@ class BufferData a where
   -- | size of the complete data in bytes
   sizeOfData :: a -> Int
 
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 
 type ShaderType = GLenum
 

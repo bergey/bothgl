@@ -4,7 +4,7 @@
 
 module Graphics.BothGL.Class where
 
-#if (defined(ghcjs_HOST_OS) && defined(USE_JAVASCRIPTFFI))
+#if defined(ghcjs_HOST_OS)
 #else
 #endif
 
