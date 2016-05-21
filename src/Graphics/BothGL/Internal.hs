@@ -1,8 +1,10 @@
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE CPP                        #-}
+{-# LANGUAGE DeriveDataTypeable         #-}
+{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables        #-}
+
 
 -- | The constructors exported from this module will be different
 -- depending on whether the library is compiled with GHC or GHCJS.  If
@@ -19,20 +21,26 @@
 module Graphics.BothGL.Internal where
 
 #if defined(ghcjs_HOST_OS)
+import           Control.Monad.IO.Class
+import           Data.Data
+import qualified Data.Vector.Storable                as V
+import           GHC.Generics
+import           GHCJS.DOM.Types
 import           GHCJS.DOM.WebGLRenderingContextBase
+import           JavaScript.TypedArray
 #else
-import Data.Coerce
-import Graphics.GL
-import Control.Monad.IO.Class
-import qualified Data.Vector.Storable as V
-import GHC.Generics
-import Data.Data
-import Foreign.ForeignPtr
-import Foreign.ForeignPtr
-import Foreign.Marshal.Alloc
-import Foreign.Marshal.Array
-import Foreign.Ptr
-import Foreign.Storable
+import           Control.Monad.IO.Class
+import           Data.Coerce
+import           Data.Data
+import qualified Data.Vector.Storable                as V
+import           Foreign.ForeignPtr
+import           Foreign.ForeignPtr
+import           Foreign.Marshal.Alloc
+import           Foreign.Marshal.Array
+import           Foreign.Ptr
+import           Foreign.Storable
+import           GHC.Generics
+import           Graphics.GL
 #endif
 
 class BufferData a where
