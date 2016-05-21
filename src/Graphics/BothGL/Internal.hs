@@ -55,7 +55,7 @@ class BufferData a where
 
 type ShaderType = GLenum
 
-newtype Shader = Shader W.WebGLShader
+newtype Shader = Shader WebGLShader
   deriving (Eq,Ord,Show,Read,Typeable,Data,Generic)
 
 newtype Program = Program WebGLProgram
@@ -103,6 +103,9 @@ newtype BufferUsage = BufferUsage GLenum
 -- For ArrayBuffer it storages vertex attributes like position, normal or color an provides
 -- the MD (Multiple Data) in SIMD (Single Instruction, Multiple Data)
 newtype Buffer a = Buffer GLuint deriving (Eq,Ord,Show,Read,Typeable,Data,Generic)
+
+unBuffer :: Buffer a -> GLuint
+unBuffer (Buffer b) = b
 
 newtype RawData = RawData (Ptr ())
 
