@@ -20,6 +20,8 @@
 
 module Graphics.BothGL.Internal where
 
+import           Data.Foldable
+
 #if defined(ghcjs_HOST_OS)
 import           Control.Monad.IO.Class
 import           Data.Data
@@ -27,7 +29,8 @@ import qualified Data.Vector.Storable                as V
 import           GHC.Generics
 import           GHCJS.DOM.Types
 import           GHCJS.DOM.WebGLRenderingContextBase
-import           JavaScript.TypedArray
+import qualified JavaScript.TypedArray               as TA
+import qualified JavaScript.TypedArray.ArrayBuffer   as AB
 #else
 import           Control.Monad.IO.Class
 import           Data.Coerce
@@ -75,12 +78,32 @@ unBuffer (Buffer b) = b
 
 newtype RawData = RawData ArrayBuffer
 
-instance TypedArray a => BufferData a where
-  withRawData v m = _someFFI
+-- instance TypedArray a => BufferData a where
+--   withRawData v m = _someFFI
 
-instance BufferData (V.Vector a) where
-  withRawData v m = _unsafeVectorStuffb
+instance BufferData ArrayBuffer where
+  withRawData v m = liftIO $  m (RawData v)
+  fromRawData end (RawData arr) = return . RawData $ AB.slice 0 (Just end) arr
+  sizeOfData = AB.byteLength
 
+-- instance BufferData (V.Vector a) where
+--   withRawData v m =
+
+instance TA.TypedArray a => BufferData [Elem a] where
+  withRawData v m = liftIO $ do
+    let l = length v
+    arr <- TA.create l
+    let set (i, el) = TA.unsafeSetIndex i el arr
+    traverse_ set $ zip [1..] v
+    m (RawData (TA.buffer arr))
+
+  fromRawData end (RawData arr) = liftIO $ do
+    mut <- AB.thaw arr -- TODO is unsafeThaw safe here?
+    let l = AB.byteLength arr `div` TA.elemSize (undefined :: a)
+    arr <- TA.fromArrayBuffer mut 0 (Just l)
+    traverse (flip TA.unsafeIndex arr) [ 0.. l ]
+
+  sizeOfData arr = length arr * elemSize arr
 #else
 
 type ShaderType = GLenum
